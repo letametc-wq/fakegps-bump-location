@@ -51,6 +51,18 @@ jobs:
           unzip -q FakeGPS_BumpLocation_Source.zip
           test -f FakeGPS_BumpLocation/app/build.gradle.kts
 
+      - name: Align Java compile target with Kotlin
+        run: |
+          cat >> FakeGPS_BumpLocation/app/build.gradle.kts <<'EOF'
+
+          android {
+              compileOptions {
+                  sourceCompatibility = JavaVersion.VERSION_17
+                  targetCompatibility = JavaVersion.VERSION_17
+              }
+          }
+          EOF
+
       - name: Build debug APK
         run: gradle --no-daemon -p FakeGPS_BumpLocation assembleDebug
 
