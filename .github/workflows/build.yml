@@ -1,4 +1,3 @@
-
 name: Build Android APK
 
 on:
@@ -6,7 +5,7 @@ on:
   push:
     branches: [main]
     paths:
-      - "FakeGPS_BumpLocation_Source.zip"
+      - "FakeGPS_BumpLocation_Source_v1.1.zip"
       - ".github/workflows/build.yml"
 
 permissions:
@@ -15,7 +14,6 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -29,7 +27,6 @@ jobs:
       - name: Install Android SDK packages
         shell: bash
         run: |
-          echo "ANDROID_HOME=$ANDROID_HOME"
           SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | head -n 1)"
           if [ -z "$SDKMANAGER" ]; then
             echo "sdkmanager not found"
@@ -46,26 +43,12 @@ jobs:
         with:
           gradle-version: "8.9"
 
-      - name: Extract Android project
+      - name: Extract v1.1 Android project
         run: |
-          unzip -q FakeGPS_BumpLocation_Source.zip
+          unzip -q FakeGPS_BumpLocation_Source_v1.1.zip
           test -f FakeGPS_BumpLocation/app/build.gradle.kts
-
-      - name: Align Java compile target with Kotlin
-        run: |
-          cat >> FakeGPS_BumpLocation/app/build.gradle.kts <<'EOF'
-
-          android {
-              compileOptions {
-                  sourceCompatibility = JavaVersion.VERSION_17
-                  targetCompatibility = JavaVersion.VERSION_17
-              }
-              
-          dependencies {
-              implementation("androidx.core:core-ktx:1.15.0")
-          }
-          }
-          EOF
+          test -f FakeGPS_BumpLocation/app/src/main/AndroidManifest.xml
+          grep -q 'ACCESS_MOCK_LOCATION' FakeGPS_BumpLocation/app/src/main/AndroidManifest.xml
 
       - name: Build debug APK
         run: gradle --no-daemon -p FakeGPS_BumpLocation assembleDebug
@@ -73,6 +56,6 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: FakeGPS-BumpLocation-debug-apk
+          name: FakeGPS-BumpLocation-v1.1-debug-apk
           path: FakeGPS_BumpLocation/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
